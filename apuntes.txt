@@ -1,0 +1,20 @@
+1.- instalar librerias.
+npm i react-router-dom axios bootstrap sweetalert2 sweetalert2-react-content @fortawesome/fontawesome-free
+
+2.- importa libreria en main.jsx
+
+import 'bootstrap/dist/css/bootstrap.min.css'
+import '@fortawesome/fontawesome-free/css/all.min.css'
+import 'bootstrap/dist/js/bootstrap.bundle.js'
+
+
+3.- Iconos
+<i className='fa-solid fa-circle-plus'></i> Añadir Categoria
+<i className="bi bi-plus-circle-fill">
+
+
+<i class="bi bi-pencil-square"></i> Editar Categoria
+
+
+4.- singo de moneda
+<td>${new Intl.NumberFormat('es-gt').format(product.price)}</td>
