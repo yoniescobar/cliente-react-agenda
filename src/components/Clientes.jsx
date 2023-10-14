@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import axios from 'axios'
 import Swal from 'sweetalert2'
-import withReactContent from 'sweetalert2-react-content'
+
 
 
 const Clientes = () => {
@@ -14,7 +14,7 @@ const Clientes = () => {
   const [email, setEmail] = useState('')
   const [operacion, setOperacion] = useState() // 1: Nuevo, 2: Editar
   const [title, setTitle] = useState('') // 1: Nuevo, 2: Editar para mostrar en el modal
-
+  const [loadign,setLoading] = useState(false) 
 
   //------------------ renderizar lista de clientes ------------------
   useEffect(() => { 
@@ -24,7 +24,9 @@ const Clientes = () => {
   //------------------ obtener todos los clientes en nuestra API ------------------
   const getClientes = async () => {
     try {
-      const response = await axios.get(url)
+        
+      const response = await axios.get(url) // url: http://localhost:3000/contacts
+  
       setClientes(response.data)
       console.log(response.data)
     } catch (error) {
@@ -45,7 +47,7 @@ const Clientes = () => {
     if(op===1){
       setTitle('Nuevo Cliente')
     }else if(op===2){
-      setTitle('Editar Cliente')
+      setTitle('Editar Clientes')
       setId(id)
       setName(name)
       setPhone(phone)
@@ -67,12 +69,12 @@ const Clientes = () => {
       })
     }else if(phone===''){
       Swal.fire({
-        text: 'El campo Nombre es obligatorio',
+        text: 'El campo Phone es obligatorio',
         icon: 'warning',
       })
     }else if(email===''){
       Swal.fire({
-        text: 'El campo Nombre es obligatorio',
+        text: 'El campo email es obligatorio',
         icon: 'warning',
       })
     }else{
@@ -93,16 +95,16 @@ const Clientes = () => {
       showCancelButton: true,
       confirmButtonText: 'Si',
       cancelButtonText: 'No',
-    }).then((result) => {
+    }).then(async(result) => {
       if (result.isConfirmed) {
         try {
-          const response = axios.post(url, {
+          const response = await axios.post(url, {
             name: name,
             phone: phone,
             email: email,
           })
           console.log(response.data)
-          getClientes()
+          await getClientes()
           document.getElementById('btnCerrar').click()
         } catch (error) {
           console.log(error)
@@ -114,30 +116,53 @@ const Clientes = () => {
   //------------------ funcion para actualizar un cliente ------------------
 
   const updateCliente = async () => {
-    try {
-      const response = await axios.put(`${url}/${id}`, {
-        name: name,
-        phone: phone,
-        email: email,
-      })
-      console.log(response.data)
-      getClientes()
-      document.getElementById('btnCerrar').click()
-    } catch (error) {
-      console.log(error)
-    }
+    Swal.fire({
+      title: '¿Está seguro de actualizar el cliente?',
+      text: name,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Si',
+      cancelButtonText: 'No',
+    }).then(async (result) => { // async: es para que espere a que se ejecute await y luego continue el codigo
+      if (result.isConfirmed) {
+        try {
+          const response = await axios.put(`${url}/${id}`, {
+            name: name,
+            phone: phone,
+            email: email,
+          })
+  
+          await getClientes()
+          document.getElementById('btnCerrar').click()
+        } catch (error) {
+          console.log(error)
+        }
+      }
+    })
   }
 
   //------------------ funcion para eliminar un cliente ------------------
 
-  const deleteCliente = async (id) => {
-    try {
-      const response = await axios.delete(`${url}/${id}`) // `${url}/${id}`: http://localhost:3000/contacts/1
-      console.log(response.data)
-      getClientes()
-    } catch (error) {
-      console.log(error)
-    }
+  const deleteCliente = async (cliente) => {
+    
+    Swal.fire({
+      title: `¿Está seguro de eliminar el cliente? ${cliente.name}`,
+      text: cliente.name,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Si',
+      cancelButtonText: 'No',
+    }).then(async (result) => { // async: es para que espere a que se ejecute await y luego continue el codigo
+      if (result.isConfirmed) {
+        try {
+          const response = await axios.delete(`${url}/${cliente.id}`)
+          console.log(response.data)
+          await getClientes()
+        } catch (error) {
+          console.log(error)
+        }
+      }
+    })
   }
 
 
@@ -161,6 +186,8 @@ const Clientes = () => {
           <table className='table table-striped table-hover'>
             <thead>
               <tr>
+                <th>#</th>
+                <th>Seleccion</th>
                 <th>Nombre</th>
                 <th>Teléfono</th>
                 <th>Email</th>
@@ -171,6 +198,12 @@ const Clientes = () => {
               {
                 Clientes.map((cliente) => (
                   <tr key={cliente.id}>
+                    <td>{
+                        <>
+                          <input className='form-check-input' type='checkbox' value={cliente.id} id='flexCheckDefault' />
+                        </>
+                      }</td>
+                    <td>{cliente.id}</td>
                     <td>{cliente.name}</td>
                     <td>{cliente.phone}</td>
                     <td>{cliente.email}</td>
@@ -179,7 +212,7 @@ const Clientes = () => {
                           className='btn btn-sm btn-outline-warning mx-1' data-bs-toggle='modal' data-bs-target='#modalClientes'>
                         <i className='fa-solid fa-pencil'></i>
                       </button>
-                      <button onClick={()=>deleteCliente(cliente.id)} className='btn btn-sm btn-outline-danger' >
+                      <button onClick={()=>deleteCliente(cliente)} className='btn btn-sm btn-outline-danger' >
                         <i className='fa-solid fa-trash'></i>
                       </button>
                     </td>
